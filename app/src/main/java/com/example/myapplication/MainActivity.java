@@ -1,50 +1,48 @@
 package com.example.myapplication;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
+import android.view.MenuItem;
 
-import java.util.ArrayList;
-import java.util.List;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
-public class MainActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private List<Hero> heroes = new ArrayList<>();
-    private ListHeroAdapter.RecyclerViewClickListener listener;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
+import java.util.HashMap;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity
+        implements BottomNavigationView.OnNavigationItemSelectedListener {
+    private BottomNavigationView bottomNavigationView;
+    private Map<Integer, Fragment> fragmentMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setOnclickListener();
-        recyclerView = findViewById(R.id.rv_hero);
-        recyclerView.setHasFixedSize(true);
-        heroes.addAll(HeroDataSource.getListData());
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ListHeroAdapter adapter = new ListHeroAdapter(heroes, listener);
-        recyclerView.setAdapter(adapter);
-
+        bottomNavigationView = findViewById(R.id.bottom_nav);
+        fragmentMap = new HashMap<>();
     }
 
-    private void setOnclickListener() {
-        listener = new ListHeroAdapter.RecyclerViewClickListener(){
-            @Override
-            public void onClick(View v,int position){
-                Intent intent = new Intent(getApplicationContext(),ProfileActivity.class);
-                intent.putExtra("index", position);
-                startActivity(intent);
-            }
-        };
+    @Override
+    protected void onStart() {
+        super.onStart();
+        fragmentMap.put(R.id.menu_item_club, FragmentClub.newInstance());
+        fragmentMap.put(R.id.menu_item_player, FragmentPlayer.newInstance());
+        fragmentMap.put(R.id.menu_item_favourite, FragmentFavourite.newInstance());
+        bottomNavigationView.setOnNavigationItemSelectedListener(this);
+        bottomNavigationView.setSelectedItemId(R.id.menu_item_club);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = fragmentMap.get(item.getItemId());
+        assert fragment != null;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frame_layout, fragment)
+                .commit();
+        return true;
     }
 }
